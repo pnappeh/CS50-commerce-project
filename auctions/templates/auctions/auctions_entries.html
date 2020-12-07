@@ -1,0 +1,167 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+    <!--Main layout-->
+    <main class="mt-5 pt-4">
+        <div class="container dark-grey-text mt-5">
+         {% if winner == request.user %}
+         <div class="alert alert-success" role="alert">
+           YOU HAVE WON THIS AUCTION
+          </div>
+         {% endif %}   
+        <!--Grid row-->
+        <div class="row wow fadeIn" style="visibility: visible; animation-name: fadeIn;">
+            <!--Grid column-->
+            <div class="col-md-6 mb-4 text-center">
+                {% if listings.image %}
+                <img src="{{ listings.image.url }}" class="auction-image img-fluid " alt="Auction Image">
+                {% else %}
+                <img src="{{ MEDIA_URL }}media/uploaded/no_image.png" class="auction-image img-fluid" alt="No image">
+                {% endif %}
+            </div>
+            <!--Grid column-->
+    
+            <!--Grid column-->
+            <div class="col-md-6 mb-4">
+    
+            <!--Content-->
+            <div class="p-4">
+    
+                <div class="mb-3 row">
+                    <a href="{% url 'categories_listings' listings.listing_category %}">
+                        <span class="badge purple mr-1">{{listings.get_listing_category_display.capitalize}}</span>
+                    </a>
+                    {% if user.is_authenticated %}
+                        {% if not watchlist_item %}
+                            <form action="{% url 'add_to_watchlist' %}" method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="watchlist" value="{{auction_url}}">
+                                <button class="badge purple mr-1 btn btn-success" type="submit">Add to Watchlist</button>
+                            </form>
+                        {% else %}
+                            <form action="{% url 'remove_from_watchlist' %}" method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="remove_from_watchlist" value="{{auction_url}}">
+                                <button class="badge purple mr-1 btn btn-warning" type="submit">Remove from Watchlist</button>
+                            </form>
+                        {% endif %}
+                    {% else %}
+                    <a href="{% url 'login' %}">
+                        <span class="badge purple mr-1">Create your Watchlist</span>
+                    </a>
+                    {% endif %}
+                    {% if listings.seller == request.user %}
+                        {% if listings.state == "1" %}
+                            <form action="{% url 'eliminate_listing' %}" method="post">
+                                {% csrf_token %}
+                                {% for field in eliminate %}
+                                {{ field.errors }}
+                                {{ field }}
+                                {% endfor %}
+                                <button class="badge purple mr-1 btn btn-danger" type="submit">Close your auction</button>
+                            </form>
+                       
+                        {% elif listings.state == "2" %}
+                            <a class="badge purple mr-1 btn btn-danger disabled" role="button" tabindex="-1" aria-disabled="true">Auction won by: "{{ winner.username }}"</a>
+                        {% endif %} 
+                    {% elif listings.state == "2" %}
+                        <a class="badge purple mr-1 btn btn-danger disabled" role="button" tabindex="-1" aria-disabled="true">This auction is no longer active</a>
+                    {% endif %}
+                </div>
+                <h1>{{ listings.name | title }}</h1>
+                <p class="lead">
+                    <span class="mr-1">
+                        <del></del>
+                    </span>
+                    <span>
+                        {% if bids %}
+                            ${{ max_bid }}
+                        {% else %}
+                            ${{listings.starting_bid}}
+                        {% endif %}
+                    </span>
+                </p>    
+                <p>{{listings.details | slice:":450"}}</p>
+                {% if user.is_authenticated and listings.state == "1" %}
+                <form class="d-flex justify-content-left" action="{% url 'bid' %}" method="post">
+                    <!-- Bid Form -->
+                    {% csrf_token %}
+                    {% for field in bid_form %}
+                        {{ field.errors }}
+                        {{ field }}
+                    {% endfor %}         
+                    <input type="submit" class="btn btn-primary col-sm-3" style="margin-left: 5px;" value="Bid">
+                </form>
+                {% elif listings.state == "2" %}
+                
+                {% elif not user.is_authenticated and listings.state == "1" %}
+                <a href="{% url 'login' %}" class="btn btn-primary col-sm-4" style="margin-left: 5px;">Sign in and bid</a>
+                <br>
+                {% endif %}
+                <small class="text-muted">Created {{listings.post_date}}</small>
+    
+            </div>
+            <!--Content-->
+    
+            </div>
+            <!--Grid column-->
+    
+        </div>
+        <!--Grid row-->
+    
+        <hr>
+    
+        <!--Grid row-->
+        <div class="row d-flex justify-content-center wow fadeIn" style="visibility: visible; animation-name: fadeIn;">
+    
+            <!--Grid column-->
+            <div class="col-12">
+    
+                <h4 class="my-4 h4">Additional information</h4>
+        
+                <p>{{listings.details}}</p>
+    
+            </div>
+            <!--Grid column-->
+    
+        </div>
+        <!--Grid row-->
+       <hr>
+        <!-- Comments Section -->
+        <div class="col-9">
+            <div class="card bg-light mb-3">
+                <div class="card-header">Comments</div>
+                <div class="card-body">
+                        {% for comments in auction_comments %}
+                        <h5 class="card-title">{{ comments.user_comment }}</h5>
+                        <p class="card-text">{{ comments.comment}}</p>
+                        <hr>
+                        {% endfor %}
+                        {% if user.is_authenticated %}
+                        <form action="{% url 'comment'%}" method="post">
+                            {% csrf_token %}
+                            {{ comment.as_p }}
+                            <input type="submit" class="btn btn-secondary" value="Comment">
+                        </form>
+                        {% else %}
+                        <a type="button" href="{% url 'login' %}" class="btn btn-light">Sign in to Comment</a>
+                        {% endif %}
+                </div>
+            </div>
+        </div> 
+        <!-- Comments Section -->
+    </div>
+    </main>
+    <!--Main layout-->
+    
+    <!-- SCRIPTS -->
+    <script type="text/javascript">
+        // Animations initialization
+        new WOW().init();
+    
+    </script>
+    
+    
+    
+    </body>
+{% endblock %}

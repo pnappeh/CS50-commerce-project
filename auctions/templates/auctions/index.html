@@ -1,0 +1,86 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+  {% if user.is_authenticated %}
+    <span class="float-right">
+      {% if watchlist_number != 0 %}
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-eye-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+          <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/>
+          <path fill-rule="evenodd" d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8zm8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/>
+        </svg>
+        {{watchlist_number}}
+      {% else %}
+      <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-eye-slash-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+        <path d="M10.79 12.912l-1.614-1.615a3.5 3.5 0 0 1-4.474-4.474l-2.06-2.06C.938 6.278 0 8 0 8s3 5.5 8 5.5a7.029 7.029 0 0 0 2.79-.588zM5.21 3.088A7.028 7.028 0 0 1 8 2.5c5 0 8 5.5 8 5.5s-.939 1.721-2.641 3.238l-2.062-2.062a3.5 3.5 0 0 0-4.474-4.474L5.21 3.089z"/>
+        <path d="M5.525 7.646a2.5 2.5 0 0 0 2.829 2.829l-2.83-2.829zm4.95.708l-2.829-2.83a2.5 2.5 0 0 1 2.829 2.829z"/>
+        <path fill-rule="evenodd" d="M13.646 14.354l-12-12 .708-.708 12 12-.708.708z"/>
+      </svg>
+      {% endif %}
+    </span>
+  {% endif %}
+  {% if index %}
+    <h2 class="col-12">Active Listings</h2>
+  {% elif categories %}
+  <h2 class="col-12">Category: {{ categories.capitalize }}</h2>
+  {% elif old %}
+  <h2 class="col-12">Old Listings</h2>
+  {% else %}
+    <h2 class="col-12">Your Watchlist</h2>
+  {% endif %}
+  {% if listings %}
+    {% for listings in listings %}
+        <div class="media card mb-3 border border-dark">
+            <div class="row no-gutters">
+              <div class="col-md-4 view overlay align-self-center text-center">
+                {% if listings.image %}
+                <img src="{{ listings.image.url }}" class="card-img-top img-fluid" alt="Auction Image">
+                {% else %}
+                <img src="{{ MEDIA_URL }}media/uploaded/no_image.png" class="card-img-top img-fluid" alt="No image">
+                {% endif %}
+              </div>
+              <div class="col-md-8">
+                <div class="card-body">
+                  <a class="badge purple mr-1 btn btn-info" href="{% url 'categories_listings' listings.listing_category %}" type="submit">{{listings.get_listing_category_display.capitalize}}</a>
+                  {% if listings.state == "2" %}
+                  <a class="badge purple mr-1 btn btn-danger disabled" role="button" tabindex="-1" aria-disabled="true">This auction is no longer active</a>
+                  {% endif %}
+                    <h5 class="card-title" style="margin-bottom: 0px;"><a href="{% url 'listing_view' listings.url %}">{{listings.name | title}}</a></h5>
+                    
+                    <p><small>By &nbsp<strong>{{listings.seller}}</strong></small></p>
+                    <p>{{listings.details | slice:":350"}}</p>
+                    <br>
+                    {% if listings.state == "1" %}
+                    <h5><strong>Current Bid: &nbsp</strong>
+                      {% for i in bids %}
+                        {% if forloop.counter == forloop.parentloop.counter %}
+                          {% if i != None %}
+                            ${{ i }}
+                          {% else %}
+                            ${{listings.starting_bid }}
+                          {% endif %}
+                        {% endif %}
+                      {% endfor %}
+                    </h5>
+                    {% elif listings.state == "2" %}
+                    <h5><strong>Winner Bid: &nbsp</strong>
+                      {% for i in bids %}
+                        {% if forloop.counter == forloop.parentloop.counter %}
+                          {% if i != None %}
+                            ${{ i }}
+                          {% else %}
+                            ${{listings.starting_bid}}
+                          {% endif %}
+                        {% endif %}
+                      {% endfor %}
+                    </h5>
+                    {% endif %}
+                    <small class="text-muted">Created {{listings.post_date}}</small>
+                </div>
+              </div>
+            </div>
+        </div>
+    {% endfor %}
+  {% else %}
+  <h3 class="col-12">No products in this category</h3>
+  {% endif %}
+{% endblock %}

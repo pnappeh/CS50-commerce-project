@@ -1,0 +1,42 @@
+body {
+    padding: 10px;
+    background-color: #f5f5f5;
+}
+
+.img_index, .card-img-top {
+    height: 300px;
+    object-fit: contain;
+    max-width:600px
+}
+
+.media, .media-body, .card-body {
+    margin: 30px;
+    padding: 10px;
+}
+
+.auction-image {
+    height:400px;
+    object-fit: contain;
+    max-width: 600px;
+}
+
+.custom-file-label {
+    position: absolute
+}
+
+.sigin {
+    margin: auto;
+}
+
+.center{
+    margin-left: 35%;
+    margin-right: 35%;
+    top: 50%;
+    max-width: 300px;
+}
+
+.icon {
+    width:120px;
+    margin-bottom: 30px
+}
+
